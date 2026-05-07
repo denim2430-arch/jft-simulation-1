@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LPK INA SUBANG - JFT Simulation</title>
+    <style>
+        :root {
+            --dark-bar: #2c3136;
+            --jft-green: #1a8a56;
+            --jft-yellow: #f1c40f;
+            --jft-light-green: #e8f5e9;
+            --nav-active: #5b8c5a;
+            --sidebar-bg: #d1d5db;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; background-color: #f0f2f5; color: #333;
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* --- LANDING PAGE --- */
+        #landing-page {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2070&auto=format&fit=crop') no-repeat center center;
+            background-size: cover; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; color: white; z-index: 3000; text-align: center; padding: 20px;
+        }
+
+        #landing-page::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.55); z-index: -1;
+        }
+
+        .landing-content {
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); padding: 40px 30px; border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            max-width: 500px; width: 100%; position: relative;
+        }
+
+        .jp-text { font-size: 1.1rem; margin-bottom: 10px; opacity: 0.9; letter-spacing: 3px; }
+        .lpk-label { font-size: 2.2rem; font-weight: 900; margin-bottom: 5px; }
+        .sub-label { font-size: 1.1rem; color: var(--jft-yellow); font-weight: 800; margin-bottom: 25px; display: block; }
+
+        .creator-badge {
+            margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.85rem; letter-spacing: 1px; color: #fff; opacity: 0.8;
+        }
+        .creator-badge b { color: var(--jft-yellow); text-shadow: 0 0 10px rgba(241, 196, 15, 0.5); }
+
+        .start-btn {
+            background-color: var(--jft-yellow); color: #333; border: none;
+            padding: 18px 50px; font-size: 1.2rem; font-weight: bold;
+            border-radius: 50px; cursor: pointer; animation: pulse-yellow 2s infinite;
+        }
+
+        @keyframes pulse-yellow {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(241, 196, 15, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(241, 196, 15, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(241, 196, 15, 0); }
+        }
+
+        /* --- TEST INTERFACE --- */
+        #test-interface { display: none; flex-direction: column; height: 100%; }
+        header {
+            background-color: var(--dark-bar); color: white; padding: 10px 15px;
+            display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+            z-index: 10;
+        }
+        .main-layout { display: flex; flex: 1; overflow: hidden; }
+        .sidebar {
+            width: 60px; background-color: var(--sidebar-bg);
+            display: flex; flex-direction: column; border-right: 1px solid #bbb;
+            overflow-y: auto; flex-shrink: 0;
+        }
+        .nav-item {
+            width: 100%; height: 45px; display: flex; align-items: center; justify-content: center;
+            background: #9ca3af; color: white; font-weight: bold; border-bottom: 1px solid #ccc; cursor: pointer;
+            flex-shrink: 0;
+        }
+        .nav-item.active { background-color: var(--nav-active) !important; position: relative; }
+        .nav-item.active::after {
+            content: ""; position: absolute; right: 0; border-top: 8px solid transparent; 
+            border-bottom: 8px solid transparent; border-right: 8px solid #fff;
+        }
+        .nav-item.answered:not(.active) { background-color: var(--jft-green); }
+        
+        .content-area { 
+            flex: 1; padding: 15px; overflow-y: auto; background: white; 
+            scroll-behavior: smooth; -webkit-overflow-scrolling: touch; 
+        }
+        .question-container { max-width: 800px; margin: 0 auto; width: 100%; }
+        
+        .instr-box {
+            background: #e8f0fe; padding: 12px; border-radius: 4px; 
+            margin-bottom: 20px; border-left: 5px solid #1a73e8; font-weight: 500; font-size: 0.9rem;
+        }
+        .q-image { 
+            display: block; width: 100%; height: auto; 
+            max-width: 100%; max-height: 400px; object-fit: contain; 
+            margin: 0 auto 20px; border: 1px solid #eee;
+        }
+        
+        .option { 
+            padding: 15px; border: 1px solid #333; margin-bottom: 12px; 
+            cursor: pointer; display: flex; align-items: center; font-size: 1rem; border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .option.selected { background-color: #dcfce7; border-color: var(--jft-green); font-weight: bold; }
+        
+        footer { 
+            background-color: #374151; padding: 10px 15px; 
+            display: flex; justify-content: space-between; flex-shrink: 0; gap: 10px;
+        }
+        .nav-btn { 
+            flex: 1; background-color: var(--jft-green); color: white; border: none; 
+            padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; 
+        }
+        .next-sec-btn {
+            background: var(--jft-yellow); color: #000; border: 2px solid #333;
+            padding: 15px 30px; font-weight: 900; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 20px;
+        }
+
+        /* --- RESULT PAGE --- */
+        #result-page { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 4000; overflow-y: auto; padding: 40px 20px; text-align: center; 
+        }
+        .score-card { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 15px; padding: 25px; max-width: 600px; margin: 0 auto 30px; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .stat-item { padding: 10px; border-radius: 8px; background: white; border: 1px solid #eee; }
+        .section-scores { text-align: left; margin-top: 30px; max-width: 600px; margin-left: auto; margin-right: auto; border-top: 1px solid #ddd; padding-top: 20px; }
+        .sec-progress-bar { height: 12px; background: #eee; border-radius: 6px; overflow: hidden; margin: 8px 0 20px; }
+        .sec-fill { height: 100%; background: var(--jft-green); }
+
+        .finish-alert {
+            background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; 
+            margin-bottom: 20px; border: 1px solid #ffeeba; text-align: center; 
+            font-weight: bold; font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div id="landing-page">
+    <div class="landing-content">
+        <div class="jp-text">皆さん一緒に頑張りましょう</div>
+        <div class="lpk-label">LPK INA SUBANG</div>
+        <span class="sub-label">JFT-BASIC A2 SIMULATION 1</span>
+        <div style="margin-bottom: 30px; font-size: 0.95rem; line-height: 1.6; opacity: 0.9;">
+            Persiapkan masa depan Anda di Jepang<br> dengan simulasi ujian JFT-Basic A2.
+        </div>
+        <button class="start-btn" onclick="startTest()">MULAI UJIAN</button>
+        <div class="creator-badge">Created by <b>DENI 先生</b></div>
+    </div>
+</div>
+
+<div id="test-interface">
+    <header>
+        <div>
+            <div id="sec-name" style="color:var(--jft-yellow); font-weight:bold; font-size:0.8rem;">SECTION</div>
+            <div id="q-num-header" style="font-weight:bold;">Question: 1</div>
+        </div>
+        <div id="timer" style="font-size:1.3rem; font-family: monospace;">60:00</div>
+        <button onclick="submitTest()" style="background:var(--jft-yellow); border:1px solid #333; padding:5px 12px; font-weight:bold; cursor:pointer; border-radius:4px;">Finish</button>
+    </header>
+
+    <div class="main-layout">
+        <div class="sidebar" id="sidebar-nav"></div>
+        <div class="content-area" id="scroll-box">
+            <div class="question-container">
+                <div id="dynamic-instr" class="instr-box"></div>
+                <div id="media-area"></div>
+                <div id="q-text" style="font-size:1.1rem; margin-bottom:25px; line-height:1.6; font-weight: 500;"></div>
+                <div id="options-area"></div>
+                <div id="next-sec-trigger" style="display:none;">
+                    <button class="next-sec-btn" onclick="jumpSection()">NEXT SECTION ❯</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <button class="nav-btn" onclick="move(-1)" style="background:#4b5563">❮ Back</button>
+        <button class="nav-btn" onclick="move(1)">Next ❯</button>
+    </footer>
+</div>
+
+<div id="result-page">
+    <div class="score-card">
+        <h2 style="color:var(--jft-green); margin:0;">SIMULATION RESULT</h2>
+        <div id="score-points" style="font-size:4.5rem; font-weight:900; color:#1e293b; margin:10px 0;">0</div>
+        <div style="font-size:1.2rem; font-weight:bold; color:#64748b;">TOTAL SCORE (MAX 250)</div>
+        <div class="stat-grid">
+            <div class="stat-item"><div style="color:#10b981; font-weight:bold;">BENAR</div><div id="correct-count" style="font-size:1.5rem;">0</div></div>
+            <div class="stat-item"><div style="color:#ef4444; font-weight:bold;">SALAH</div><div id="wrong-count" style="font-size:1.5rem;">0</div></div>
+        </div>
+        <div id="pass-status" style="margin-top:25px; padding:10px; border-radius:8px; font-weight:900; font-size:1.3rem;"></div>
+    </div>
+    <div class="section-scores" id="sec-breakdown"></div>
+    <button class="start-btn" onclick="location.reload()" style="animation:none; background:var(--jft-green); color:white; margin-top:20px;">TES ULANG</button>
+</div>
+
+<script>
+const sectionInstructions = {
+    "VOCAB": "絵を見て正しいものを選んでください<br>Lihat gambar atau baca teks, lalu pilih jawaban yang benar.",
+    "CONV": "対話を聞いて、または読んで正しい答えを選んでください<br>Dengarkan atau baca percakapan, lalu pilih jawaban yang benar.",
+    "LIST": "音声を聞いて正しい答えを選んでください<br>Dengarkan audio dengan teliti dan pilih jawaban yang paling tepat.",
+    "READ": "文章を読んで質問に答えてください<br>Baca teks bacaan berikut dan jawablah pertanyaan dengan benar."
+};
+
+const db = {
+    "VOCAB": [
+        { text: "何をしていますか", img: "https://lh3.googleusercontent.com/u/0/d/1EuA6CNIG1BVDrM0XS6uxAxRg_-ex-Icz", opts: ["変わります", "笑います", "泣きます", "寝ます"], ans: 1 },
+        { text: "これは何ですか", img: "https://lh3.googleusercontent.com/u/0/d/1f0tsnhS0-Jr8k8OJIV4JZL5J8SFa0LGg", opts: ["店", "居酒屋", "屋台", "喫茶店"], ans: 2 },
+        { text: "これは何ですか", img: "https://lh3.googleusercontent.com/u/0/d/19DAcObvUsSVdI57oCcm_rFt2gismbZTy", opts: ["ケーブル", "延長コード", "ドライバー", "スイッチ"], ans: 1 },
+        { text: "これは何ですか", img: "https://lh3.googleusercontent.com/u/0/d/1xvqzUu_1oC4rCsqkc103-FwBWe0SL5Eh", opts: ["電池", "電波", "電気", "電源"], ans: 0 },
+        { text: "これは何ですか", img: "https://lh3.googleusercontent.com/u/0/d/1YSVK3z0Rm5Ys3dmqc59927VHTwSrRqpu", opts: ["新聞", "漫画", "雑誌", "小説"], ans: 1 },
+        { text: "運動する前に、 __________ストレッチをしましょう。", opts: ["まず", "さいご", "さいしょ", "つぎ"], ans: 0 },
+        { text: "毎日練習したので、明日の試合は __________勝てます。", opts: ["ぜんぜん", "きっと", "すこし", "ずっと"], ans: 1 },
+        { text: "私の________ は、日本語の先生になることです。", opts: ["おかげ", "しごと", "ゆめ", "しゅみ"], ans: 2 },
+        { text: "もう雨が______________。", opts: ["とまりました", "やみました", "ふりました", "なくなりました"], ans: 1 },
+        { text: "<u>ゆうがた</u>から雨が降るそうです。" , opts: ["夕方", "晩方", "夜方", "昼方"], ans: 0 },
+        { text: "山形<u>けん</u>はさくらんぼが有名です。", opts: ["町", "市", "火", "県"], ans: 3 },
+        { text: "<u>きょねん</u>、日本に来ました。", opts: ["去年", "昨年", "来年", "再来年"], ans: 0 },
+        { text: "週末、<u>よてい</u>はありますか。", opts: ["約束", "予定", "予約", "用事"], ans: 1 },
+        { text: "朝は<u>はれ</u>でした。でも、今はくもっています。", opts: ["光れ", "暮れ", "晴れ", "疲れ"], ans: 2 },
+        { text: "ホテルの<u>場所</u>はどこですか。", opts: ["こじょう", "ばしょう", "ばしょ", "ばしよ"], ans: 2 },
+        { text: "友だちはドイツに<u>留学</u>しています。", opts: ["りゅうがく", "りゅがく", "ちゅうがく", "りゅかく"], ans: 0 },
+        { text: "今月の３日はあべさんの<u>誕生日</u>です。", opts: ["たんじょうび", "せいねんがっぴ", "たんじょび", "たんじょうひ"], ans: 0 },
+        { text: "そのイベントは<u>有料</u>です。", opts: ["ゆりょう", "ゆうりょう","ゆうりょ", "ゆりょ"], ans: 1 },
+    ],
+    "CONV": [
+        { text: "この料理はかんたんですから、子ども________ 作れますよ。", opts: ["とか", "しか", "でも"], ans: 2 },
+        { text: "国に帰ったら、日本語を教えるしごとを_________と思います。", opts: ["しよう", "したら", "します"], ans: 0 },
+        { text: "雨が＿＿＿＿＿かもしれないから、かさを持って出かけよう。", opts: ["ふり", "ふる", "ふった"], ans: 1 },
+        { text: "いらっしゃいませ。どうぞ お_______ください。", opts: ["入ろう", "入って", "入り"], ans: 2 },
+        { text: "ねつがあるなら、_____________ほうがいいですよ。", opts: ["およがない", "およいだ", "およぐ"], ans: 0 },
+        { text: "私はナイフでりんごを ________ことができません。", opts: ["切り", "切る", "切った"], ans: 1 },
+        { text: "A: あのう、[driver license] は、日本語で何と言いますか。<br>B: ああ、めんきょしょうです。<br>A: すみません。______________________________。<br>B: めんきょしょう。<br>A: めんきょしょう. わかりました。", opts: ["もう少し、ゆっくり言ってください。", "ありがとうございます。", "日本語で何ですか。"], ans: 0 },
+        { text: "A: 退院したそうですね。よかったですね。<br>B: _______________。", opts: ["どういたしまして", "おだいじに。", "おかげさまで。"], ans: 2 },
+        { text: "A: このボールペンを使ってもいいですか。<br>B: ええ、______________。", opts: ["そうですよ。", "かまいませんよ。", "使いますよ。"], ans: 1 },
+        { text: "A: 日本では、何をしていますか。<br>B: 働いています。<br>A: そうですか。どんな仕事ですか。<br>B: 介護の仕事をしています。<br>A: 仕事はどうですか。<br>B: 毎日、大変です。でも、_______________。", opts: ["残業がよくあります。", "おもしろくないです。", "おもしろいです。"], ans: 2 },
+        { text: "A: 趣味は何ですか。<br>B: うーん。__________________。家でごろごろするのが好きです。", opts: ["特にないです。", "どうしますか。", "いいですね。"], ans: 0 },
+        { text: "A: 今、コーヒーを飲みに行くところですが、いっしょにどうですか。<br>B: ええ、_______________。", opts: ["ぜんぜん", "ぜひ", "とても"], ans: 1 },
+    ],
+    "LIST": [
+        { text: "ちゃんと聞いてください !!", img: "https://lh3.googleusercontent.com/u/0/d/1wxbgaldsV8mBzVuACsdaVrmYDV7O1wfs", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-1.mp3", opts: ["A", "B", "C", "D"], ans: 2 },
+        { text: "ちゃんと聞いてください !!", img: "https://lh3.googleusercontent.com/u/0/d/1CAdAX7eSJIPoj9TfbukbVEjiK4fmPWZ6", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-2.mp3", opts: ["A", "B", "C", "D"], ans: 0 },
+        { text: "ちゃんと聞いてください !!", img: "https://lh3.googleusercontent.com/u/0/d/1Y9qWUFcviG2Yh97fIWfGFrvN2KY_C0AZ", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-3.mp3", opts: ["A", "B", "C", "D"], ans: 2 },
+        { text: "女性はいつ日本語教室に行っていますか？", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-4.mp3", opts: ["火曜日－午前7時", "火曜日－午後7時", "土曜日－午前"], ans: 1 },
+        { text: "ちゃんと聞いてください !!", img: "https://lh3.googleusercontent.com/u/0/d/1yzY07QH4Z-TJC4VJmedTOXnKN5zYDXcA", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-5.mp3", opts: ["A", "B", "C", "D"], ans: 3 },
+        { text: "ちゃんと聞いてください !!", img: "https://lh3.googleusercontent.com/u/0/d/1Hfjji6ZMehqXAlP0pRFqY4D35TJFcj57", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-6.mp3", opts: ["A", "B", "C", "D"], ans: 2 },
+        { text: "ちゃんと聞いてください !!", img: "https://lh3.googleusercontent.com/u/0/d/1UclGdvZ6FrHdOK8nw3xdP1pHbkYw6olO", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-7.mp3", opts: ["A", "B", "C", "D"], ans: 3 },
+        { text: "ちゃんと聞いてください !!", img: "https://lh3.googleusercontent.com/u/0/d/1XMhLSynlByxZMwlq8vyJGXfzwEGFGr9B", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-80.mp3", opts: ["A", "B", "C"], ans: 1 },
+        { text: "ちゃんと聞いてください !!", img: "https://lh3.googleusercontent.com/u/0/d/1-1m36A-_jdHVbYpPlYuPlDvxSzsoggQB", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-9.mp3", opts: ["A", "B", "C", "D"], ans: 1 },
+        { text: "ちゃんと聞いてください !!", img: "https://lh3.googleusercontent.com/u/0/d/1nA18o6egexet_2kAtC5ZSkCJAp_TR7kU", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-10.mp3", opts: ["A", "B", "C"], ans: 1 },
+    ],
+    "READ": [
+        { text: "正しいのはどれですか。", img: "https://lh3.googleusercontent.com/u/0/d/1NT7mf7sM-MzTRj2eZEWWXmHVDfx6N0v5", opts:  ["卵と牛乳をまぜてから、ホットケーキミックスを入れます。", "なにもかけないで食べます。", "マヨネーズをのせて食べます。"], ans: 0 },
+        { text: "ちゃんと読んで下さい !!", img: "https://lh3.googleusercontent.com/u/0/d/1Kflngd30AMcOXNG-GgwsawqGQ9anzXoi", opts: ["あべさんは新しい友だちと韓国に旅行に行きたいです。", "キムさんのしゅみはJポップです。", "キムさんはなかむらさんに会ったことがあります。"], ans: 0 },
+        { text: "正しいのはどれですか。", img: "https://lh3.googleusercontent.com/u/0/d/1rBaY5bq8LBJiCghn0mJXrF1WiQ7nqV-q", opts: ["キムさんはいそがしくてどこにも行きませんでした。", "キムさんは夏休みに帰国しませんでした。", "キムさんはまつい先生とハンさんと３人で話せてうれしかった。"], ans: 0 },
+        { text: "どれが正しいですか", img: "https://lh3.googleusercontent.com/u/0/d/1OFW4xMUrBmVf92t4fR0Xn2q_HnOI-5_U", opts: ["この人はねこを友だちにあげた。", "この人はねこを友だちからもらった。", "この人はねこを友だちから買った。"], ans: 0 },
+        { text: "正しいものはどれですか。", img: "https://lh3.googleusercontent.com/u/0/d/1MDhnaeyLuIUNA6Aiz2N02EARSJT4_OSl", opts: ["ひとり２０てんまで借りることができます。", "１５日間借りることができます。", "借りるときは、図書館カードを持たなくてもいいです。"], ans: 0 },
+        { text: "今日は３月２２日です。スーパーに買い物に来ました。今、レジに並んでいます。あなたのかごの中には、食パン、たまご、冷凍コロッケ、キャベツ、りんごが入っています。どのクーポンが使えますか。", img: "https://lh3.googleusercontent.com/u/0/d/1Tn7hVcaeXvYOm-8-c0flRQXfgiD-qOHS", opts: ["①と④と⑥", "②と⑤と⑭", "⑤と⑦と⑮"], ans: 0 },
+    ]
+};
+
+let questions = [];
+const secKeys = ["VOCAB", "CONV", "LIST", "READ"];
+const secNames = { "VOCAB": "文字語彙 (Vocabulary)", "CONV": "会話 & 表現 (Conversation)", "LIST": "聴解 (Listening)", "READ": "読解 (Reading)" };
+
+secKeys.forEach(k => { if(db[k]) db[k].forEach(q => { q.section = k; questions.push(q); }); });
+
+let cur = 0;
+let answers = new Array(questions.length).fill(null);
+let audioPlayCounts = new Array(questions.length).fill(0); 
+let timer = 3600;
+
+function startTest() {
+    document.getElementById('landing-page').style.display = 'none';
+    document.getElementById('test-interface').style.display = 'flex';
+    render();
+    const countdown = setInterval(() => {
+        if(timer > 0) {
+            timer--;
+            let m = Math.floor(timer/60), s = timer%60;
+            document.getElementById('timer').innerText = `${m}:${s.toString().padStart(2,'0')}`;
+        } else { 
+            clearInterval(countdown);
+            submitTest(); 
+        }
+    }, 1000);
+}
+
+function render() {
+    if(questions.length === 0) return;
+    const q = questions[cur];
+    const info = getSecInfo(cur);
+    const isLastQuestion = (cur === questions.length - 1);
+    
+    const scrollBox = document.getElementById('scroll-box');
+    scrollBox.scrollTop = 0;
+    
+    document.getElementById('sec-name').innerText = secNames[q.section];
+    document.getElementById('dynamic-instr').innerHTML = sectionInstructions[q.section];
+    document.getElementById('q-num-header').innerText = `Question: ${cur + 1}`;
+    document.getElementById('q-text').innerHTML = q.text;
+
+    const media = document.getElementById('media-area');
+    media.innerHTML = '';
+    
+    if(isLastQuestion) {
+        media.innerHTML += `
+            <div class="finish-alert">
+                ⚠️ INI ADALAH SOAL TERAKHIR.<br>Silakan klik tombol "Finish" di pojok kanan atas untuk mengirim jawaban.
+            </div>
+        `;
+    }
+
+    if(q.img) {
+        media.innerHTML += `<img src="${q.img}" class="q-image" alt="Question Image" onerror="this.src='https://via.placeholder.com/400x300?text=Image+Not+Found'">`;
+    }
+    
+    if(q.audio) {
+        const audioId = `audio-${cur}`;
+        const playInfoId = `info-${cur}`;
+        const currentCount = audioPlayCounts[cur];
+        media.innerHTML += `
+            <div style="background:#f1f5f9; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #cbd5e1;">
+                <audio id="${audioId}" src="${q.audio}" onplay="handleAudioPlay(${cur})"></audio>
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <button onclick="playAudio('${audioId}', ${cur})" id="btn-audio-${cur}" 
+                            style="padding:10px 20px; cursor:pointer; background:var(--jft-green); color:white; border:none; border-radius:6px; font-weight:bold;"
+                            ${currentCount >= 2 ? 'disabled style="background:#ccc"' : ''}>▶ PLAY AUDIO</button>
+                    <span id="${playInfoId}" style="font-size:0.9rem; font-weight:bold; color:#666;">Diputar: ${currentCount}/2</span>
+                </div>
+            </div>
+        `;
+    }
+
+    const optsArea = document.getElementById('options-area');
+    optsArea.innerHTML = '';
+    q.opts.forEach((o, i) => {
+        if(o !== "") {
+            const div = document.createElement('div');
+            div.className = `option ${answers[cur] === i ? 'selected' : ''}`;
+            div.innerHTML = `<b style="width:30px; flex-shrink:0;">${String.fromCharCode(65+i)}.</b> <span>${o}</span>`;
+            div.onclick = () => { answers[cur] = i; render(); };
+            optsArea.appendChild(div);
+        }
+    });
+
+    document.getElementById('next-sec-trigger').style.display = (cur === info.end && cur < (questions.length - 1)) ? 'block' : 'none';
+    renderNav(info);
+}
+
+function playAudio(id, index) {
+    const audio = document.getElementById(id);
+    if (audioPlayCounts[index] < 2) {
+        audio.play().catch(e => {
+            console.error("Gagal putar audio:", e);
+            alert("Audio sedang dimuat atau koneksi tidak stabil. Silakan tunggu sebentar.");
+        });
+    } else {
+        alert("Batas putar audio habis (Maks 2 kali).");
+    }
+}
+
+function handleAudioPlay(index) {
+    const audioObj = document.getElementById(`audio-${index}`);
+    const btnObj = document.getElementById(`btn-audio-${index}`);
+    const infoObj = document.getElementById(`info-${index}`);
+    audioPlayCounts[index]++;
+    infoObj.innerText = `Diputar: ${audioPlayCounts[index]}/2`;
+    if (audioPlayCounts[index] >= 2) {
+        audioObj.onended = () => {
+            btnObj.disabled = true;
+            btnObj.style.background = "#ccc";
+            btnObj.innerText = "LIMIT REACHED";
+        };
+    }
+}
+
+function renderNav(info) {
+    const nav = document.getElementById('sidebar-nav');
+    nav.innerHTML = '';
+    for(let i = info.start; i <= info.end; i++) {
+        const d = document.createElement('div');
+        d.className = `nav-item ${answers[i] !== null ? 'answered' : ''} ${i === cur ? 'active' : ''}`;
+        d.innerText = i + 1;
+        d.onclick = () => { cur = i; render(); };
+        nav.appendChild(d);
+    }
+}
+
+function getSecInfo(idx) {
+    const s = questions[idx].section;
+    const start = questions.findIndex(x => x.section === s);
+    const end = questions.map(x => x.section).lastIndexOf(s);
+    return { start, end };
+}
+
+function move(dir) {
+    const info = getSecInfo(cur);
+    let target = cur + dir;
+    if (dir === -1) { if (target >= 0) { cur = target; render(); } } 
+    else if (dir === 1) {
+        if (target <= info.end) { cur = target; render(); }
+        else if (cur < questions.length - 1) { alert("Klik 'NEXT SECTION' untuk lanjut."); }
+    }
+}
+
+function jumpSection() { cur = getSecInfo(cur).end + 1; render(); }
+
+function submitTest() {
+    if(!confirm("Kirim jawaban?")) return;
+    let correctTotal = 0;
+    const stats = {};
+    secKeys.forEach(k => { stats[k] = { correct: 0, total: 0 }; });
+    questions.forEach((q, i) => {
+        stats[q.section].total++;
+        if(answers[i] === q.ans) { stats[q.section].correct++; correctTotal++; }
+    });
+    let points = Math.round((correctTotal / questions.length) * 250);
+    document.getElementById('test-interface').style.display = 'none';
+    document.getElementById('result-page').style.display = 'block';
+    document.getElementById('score-points').innerText = points;
+    document.getElementById('correct-count').innerText = correctTotal;
+    document.getElementById('wrong-count').innerText = questions.length - correctTotal;
+    const breakdown = document.getElementById('sec-breakdown');
+    breakdown.innerHTML = '<h3 style="margin-bottom:15px">Section Score Breakdown:</h3>';
+    secKeys.forEach(k => {
+        if(stats[k].total > 0) {
+            let pct = Math.round((stats[k].correct / stats[k].total) * 100);
+            breakdown.innerHTML += `<div style="display:flex; justify-content:space-between; font-weight:bold;"><span>${secNames[k]}</span><span>${pct}%</span></div><div class="sec-progress-bar"><div class="sec-fill" style="width:${pct}%"></div></div>`;
+        }
+    });
+    const status = document.getElementById('pass-status');
+    if(points >= 200) { status.innerText = "PASSED (合格)"; status.style.color = "#059669"; status.style.background = "#dcfce7"; } 
+    else { status.innerText = "FAILED (不合格)"; status.style.color = "#dc2626"; status.style.background = "#fee2e2"; }
+}
+</script>
+</body>
+</html>
