@@ -64,6 +64,33 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(241, 196, 15, 0); }
         }
 
+        /* --- LOGIN PAGE --- */
+        #login-page {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #f8fafc; z-index: 2500; display: none; flex-direction: column;
+            justify-content: center; align-items: center; padding: 20px;
+        }
+        .login-card {
+            background: white; padding: 40px 30px; border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 400px;
+            border-top: 8px solid var(--jft-green); text-align: center;
+        }
+        .login-card h2 { margin: 0 0 10px; color: var(--dark-bar); }
+        .login-card p { color: #64748b; font-size: 0.9rem; margin-bottom: 25px; }
+        .input-group { text-align: left; margin-bottom: 15px; }
+        .input-group label { display: block; font-weight: bold; font-size: 0.85rem; margin-bottom: 5px; color: #475569; }
+        .input-group input {
+            width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 10px;
+            font-size: 1rem; transition: border-color 0.2s; outline: none;
+        }
+        .input-group input:focus { border-color: var(--jft-green); }
+        .login-btn {
+            background: var(--jft-green); color: white; border: none; width: 100%;
+            padding: 15px; border-radius: 10px; font-weight: bold; font-size: 1rem;
+            cursor: pointer; margin-top: 10px; transition: opacity 0.2s;
+        }
+        .login-btn:active { opacity: 0.8; }
+
         /* --- TEST INTERFACE --- */
         #test-interface { display: none; flex-direction: column; height: 100%; }
         header {
@@ -154,9 +181,30 @@
         <div style="margin-bottom: 30px; font-size: 0.95rem; line-height: 1.6; opacity: 0.9;">
             Persiapkan masa depan Anda di Jepang<br> dengan simulasi ujian JFT-Basic A2.
         </div>
-        <button class="start-btn" onclick="startTest()">MULAI UJIAN</button>
+        <button class="start-btn" onclick="goToLogin()">MULAI UJIAN</button>
         <div class="creator-badge">Created by <b>DENI 先生</b></div>
     </div>
+</div>
+
+<div id="login-page">
+    <div class="login-card">
+        <div style="font-size: 2rem; margin-bottom: 10px;">📝</div>
+        <h2>Identitas Peserta</h2>
+        <p>Silakan masukkan nama lengkap dan kode soal yang diberikan oleh pengajar.</p>
+        
+        <div class="input-group">
+            <label>NAMA LENGKAP</label>
+            <input type="text" id="user-name" placeholder="Masukkan nama Anda...">
+        </div>
+        
+        <div class="input-group">
+            <label>KODE SOAL</label>
+            <input type="text" id="test-code" placeholder="Masukkan kode soal...">
+        </div>
+        
+        <button class="login-btn" onclick="validateAccess()">MASUK KE SOAL</button>
+    </div>
+    <div style="margin-top: 20px; font-size: 0.8rem; color: #94a3b8;">LPK INA SUBANG - JFT Simulation System</div>
 </div>
 
 <div id="test-interface">
@@ -193,6 +241,7 @@
 <div id="result-page">
     <div class="score-card">
         <h2 style="color:var(--jft-green); margin:0;">SIMULATION RESULT</h2>
+        <div id="student-name-display" style="font-weight: bold; color: #475569; margin-top: 10px;"></div>
         <div id="score-points" style="font-size:4.5rem; font-weight:900; color:#1e293b; margin:10px 0;">0</div>
         <div style="font-size:1.2rem; font-weight:bold; color:#64748b;">TOTAL SCORE (MAX 250)</div>
         <div class="stat-grid">
@@ -206,6 +255,12 @@
 </div>
 
 <script>
+// ==========================================
+// PENGATURAN KODE SOAL (Bisa diubah di sini)
+// ==========================================
+const CONFIG_KODE_SOAL = "INA2026"; 
+// ==========================================
+
 const sectionInstructions = {
     "VOCAB": "絵を見て正しいものを選んでください<br>Lihat gambar atau baca teks, lalu pilih jawaban yang benar.",
     "CONV": "対話を聞いて、または読んで正しい答えを選んでください<br>Dengarkan atau baca percakapan, lalu pilih jawaban yang benar.",
@@ -220,23 +275,27 @@ const db = {
         { text: "これは何ですか", img: "https://lh3.googleusercontent.com/u/0/d/19DAcObvUsSVdI57oCcm_rFt2gismbZTy", opts: ["ケーブル", "延長コード", "ドライバー", "スイッチ"], ans: 1 },
         { text: "これは何ですか", img: "https://lh3.googleusercontent.com/u/0/d/1xvqzUu_1oC4rCsqkc103-FwBWe0SL5Eh", opts: ["電池", "電波", "電気", "電源"], ans: 0 },
         { text: "これは何ですか", img: "https://lh3.googleusercontent.com/u/0/d/1YSVK3z0Rm5Ys3dmqc59927VHTwSrRqpu", opts: ["新聞", "漫画", "雑誌", "小説"], ans: 1 },
-        { text: "運動する前に、 __________ストレッチをしましょう。", opts: ["まず", "さいご", "さいしょ", "つぎ"], ans: 0 },
-        { text: "毎日練習したので、明日の試合は __________勝てます。", opts: ["ぜんぜん", "きっと", "すこし", "ずっと"], ans: 1 },
-        { text: "私の________ は、日本語の先生になることです。", opts: ["おかげ", "しごと", "ゆめ", "しゅみ"], ans: 2 },
-        { text: "もう雨が______________。", opts: ["とまりました", "やみました", "ふりました", "なくなりました"], ans: 1 },
         { text: "<u>ゆうがた</u>から雨が降るそうです。" , opts: ["夕方", "晩方", "夜方", "昼方"], ans: 0 },
         { text: "山形<u>けん</u>はさくらんぼが有名です。", opts: ["町", "市", "火", "県"], ans: 3 },
         { text: "<u>きょねん</u>、日本に来ました。", opts: ["去年", "昨年", "来年", "再来年"], ans: 0 },
         { text: "週末、<u>よてい</u>はありますか。", opts: ["約束", "予定", "予約", "用事"], ans: 1 },
         { text: "朝は<u>はれ</u>でした。でも、今はくもっています。", opts: ["光れ", "暮れ", "晴れ", "疲れ"], ans: 2 },
         { text: "ホテルの<u>場所</u>はどこですか。", opts: ["こじょう", "ばしょう", "ばしょ", "ばしよ"], ans: 2 },
-        { text: "友だちはドイツに<u>留学</u>しています。", opts: ["りゅうがく", "りゅ gak", "ちゅうがく", "りゅかく"], ans: 0 },
+        { text: "友だちはドイツに<u>留学</u>しています。", opts: ["りゅうがく", "りゅ がく", "ちゅうがく", "りゅかく"], ans: 0 },
         { text: "今月の３日はあべさんの<u>誕生日</u>です。", opts: ["たんじょうび", "せいねんがっぴ", "たんじょび", "たんじょうひ"], ans: 0 },
         { text: "そのイベントは<u>有料</u>です。", opts: ["ゆりょう", "ゆうりょう","ゆうりょ", "ゆりょ"], ans: 1 },
+        { text: "運動する前に、 __________ストレッチをしましょう。", opts: ["まず", "さいご", "さいしょ", "つぎ"], ans: 0 },
+        { text: "毎日練習したので、明日の試合は __________勝てます。", opts: ["ぜんぜん", "きっと", "すこし", "ずっと"], ans: 1 },
+        { text: "私の________ は、日本語の先生になることです。", opts: ["おかげ", "しごと", "ゆめ", "しゅみ"], ans: 2 },
+        { text: "わたしは日本のマンガに＿＿＿＿＿があります。", opts: ["きぶん", "きょうみ", "しゅみ", "しゅり"], ans: 1 },
+        { text: "海外旅行に行くなら、大きい＿＿＿＿が必要です。", opts: ["アクセサリー", "ボタン", "スーツケース", "スマホケース"], ans: 2 },
+        { text: "もう雨が______________。", opts: ["とまりました", "やみました", "ふりました", "なくなりました"], ans: 1 },
     ],
     "CONV": [
-        { text: "この料理 di atas meja di kantin ini sangat enak.", opts: ["とか", "しか", "でも"], ans: 2 },
+        { text: "この料理 はかんたんですから、子ども________ 作れますよ。", opts: ["とか", "しか", "でも"], ans: 2 },
         { text: "国に帰ったら、日本語を教えるしごとを_________と思います。", opts: ["しよう", "したら", "します"], ans: 0 },
+        { text: "車を運転する人は、お酒を＿＿＿＿＿＿だめです。", opts: ["飲んじゃ", "飲んでも", "飲んちゃ"], ans: 0 },
+        { text: "コンサートの写真を＿＿＿＿＿いいですか。", opts: ["とったら", "とっては", "とっても"], ans: 2 },
         { text: "雨が＿＿＿＿＿かもしれないから、かさを持って出かけよう。", opts: ["ふり", "ふる", "ふった"], ans: 1 },
         { text: "いらっしゃいませ。どうぞ お_______ください。", opts: ["入ろう", "入って", "入り"], ans: 2 },
         { text: "ねつがあるなら、_____________ほうがいいですよ。", opts: ["およがない", "およいだ", "およぐ"], ans: 0 },
@@ -244,7 +303,7 @@ const db = {
         { text: "A: あのう、[driver license] は、日本語で何と言いますか。<br>B: ああ、めんきょしょうです。<br>A: すみません。______________________________。<br>B: めんきょしょう。<br>A: めんきょしょう. わかりました。", opts: ["もう少し、ゆっくり言ってください。", "ありがとうございます。", "日本語で何ですか。"], ans: 0 },
         { text: "A: 退院したそうですね。よかったですね。<br>B: _______________。", opts: ["どういたしまして", "おだいじに。", "おかげさまで。"], ans: 2 },
         { text: "A: このボールペンを使ってもいいですか。<br>B: ええ、______________。", opts: ["そうですよ。", "かまいませんよ。", "使いますよ。"], ans: 1 },
-        { text: "A: 日本では、何をしていますか。<br>B: 働いています。<br>A: そうですか。どんな仕事ですか。<br>B: 介護の仕事をしています。<br>A: 仕事はどうですか。<br>B: 毎日、大変です。でも、_______________。", opts: ["残業がよくあります。", "おもしろくないです。", "おもしろいです。"], ans: 2 },
+        { text: "A: 日本では、何をしていますか。<br>B: 働いています。<br>A: そうですか。どんな仕事ですか。<br>B: 介護の仕事をしています。<br>A: 仕事はどうですか。<br>B: 毎日、大変です。進んでいます。でも、_______________。", opts: ["残業がよくあります。", "おもしろくないです。", "おもしろいです。"], ans: 2 },
         { text: "A: 趣味は何ですか。<br>B: うーん。__________________。家でごろごろするのが好きです。", opts: ["特にないです。", "どうしますか。", "いいですね。"], ans: 0 },
         { text: "A: 今、コーヒーを飲みに行くところですが、いっしょにどうですか。<br>B: ええ、_______________。", opts: ["ぜんぜん", "ぜひ", "とても"], ans: 1 },
     ],
@@ -257,16 +316,16 @@ const db = {
         { text: "ちゃんと聞いてください !!", img: "https://lh3.googleusercontent.com/u/0/d/1Hfjji6ZMehqXAlP0pRFqY4D35TJFcj57", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-6.mp3", opts: ["A", "B", "C", "D"], ans: 2 },
         { text: "ちゃんと聞いてください !!", img: "https://lh3.googleusercontent.com/u/0/d/1UclGdvZ6FrHdOK8nw3xdP1pHbkYw6olO", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-7.mp3", opts: ["A", "B", "C", "D"], ans: 3 },
         { text: "ちゃんと聞いてください !!", img: "https://lh3.googleusercontent.com/u/0/d/1XMhLSynlByxZMwlq8vyJGXfzwEGFGr9B", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-80.mp3", opts: ["A", "B", "C"], ans: 1 },
-        { text: "ちゃんと聞いてください !!", img: "https://lh3.googleusercontent.com/u/0/d/1-1m36A-_jdHVbYpPlYuPlDvxSzsoggQB", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-9.mp3", opts: ["A", "B", "C", "D"], ans: 1 },
+        { text: "ちゃんと聞いてください !!", img: "https://lh3.googleusercontent.com/u/0/d/1-1m36A-_jdHVbYpPlYuPlDvxSzsoggQB", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-9.mp3", opts: ["A", "B", "C",], ans: 1 },
         { text: "ちゃんと聞いてください !!", img: "https://lh3.googleusercontent.com/u/0/d/1nA18o6egexet_2kAtC5ZSkCJAp_TR7kU", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-10.mp3", opts: ["A", "B", "C"], ans: 1 },
     ],
     "READ": [
         { text: "正しいのはどれですか。", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/1.PNG", opts: ["卵と牛乳をまぜてから、ホットケーキミックスを入れます。", "なにもかけないで食べます。", "マヨネーズをのせて食べます。"], ans: 0 },
-        { text: "ちゃんと読んで下さい !!", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/2.PNG", opts: ["あべさんは新しい友だちと韓国に旅行に行きたいです。", "キムさんのしゅみはJポップです。", "キムさんはなかむらさんに会ったことがあります。"], ans: 0 },
-        { text: "正しいのはどれですか。", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/3.PNG", opts: ["キムさんはいそがしくてどこにも行きませんでした。", "キムさんは夏休みに帰国しませんでした。", "キムさんはまつい先生とハンさんと３人で話せてうれしかった。"], ans: 0 },
-        { text: "どれが正しいですか", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/4.PNG", opts: ["この人はねこを友だちにあげた。", "この人はねこを友だちからもらった。", "この人はねこ को友だちから買った。"], ans: 0 },
-        { text: "正しいものはどれですか。", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/5.PNG", opts: ["ひとり２０てんまで借りることができます。", "１５日間借りることができます。", "借りるときは、図書館カードを持たなくてもいいです。"], ans: 0 },
-        { text: "今日は３月２２日です。スーパーに買い物に来ました。今、レジに並んでいます。あなたのかごの中には、食パン、たまご、冷凍コロッケ、キャベツ、りんごが入っています。どのクーポンが使えますか。", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/6.PNG", opts: ["①と④と⑥", "②と⑤と⑭", "⑤と⑦と⑮"], ans: 0 },
+        { text: "ちゃんと読んで下さい !!", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/2.PNG", opts: ["あべさんは新しい友だちと韓国に旅行に行きたいです。", "キムさんのしゅみはJポップです。", "キムさんはなかむらさんに会ったことがあります。"], ans: 1 },
+        { text: "正しいのはどれですか。", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/3.PNG", opts: ["キムさんはいそがしくてどこにも行きませんでした。", "キムさんは夏休みに帰国しませんでした。", "キムさんはまつい先生とハンさんと３人で話せてうれしかった。"], ans: 1 },
+        { text: "どれが正しいですか", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/4.PNG", opts: ["この人はねこを友だちにあげた。", "この人はねこを友だちからもらった。", "この人はねこを友だちから買った。"], ans: 1 },
+        { text: "正しいものはどれですか。", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/5.PNG", opts: ["ひとり２０てんまで借りることができます。", "１５日間借りることができます。", "借りるときは、図書館カードを持たなくてもいいです。"], ans: 1 },
+        { text: "今日は３月２２日です。スーパーに買い物に来ました。今、レジに並んでいます。あなたのかごの中には、食パン、たまご、冷凍コロッケ、キャベツ、りんごが入っています。どのクーポンが使えますか。", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/6.PNG", opts: ["①と④と⑥", "②と⑤と⑭", "⑤と⑦と⑮"], ans: 2 },
     ]
 };
 
@@ -280,9 +339,32 @@ let cur = 0;
 let answers = new Array(questions.length).fill(null);
 let audioPlayCounts = new Array(questions.length).fill(0); 
 let timer = 3600;
+let studentName = "";
+
+function goToLogin() {
+    document.getElementById('landing-page').style.display = 'none';
+    document.getElementById('login-page').style.display = 'flex';
+}
+
+function validateAccess() {
+    const nameInput = document.getElementById('user-name').value;
+    const codeInput = document.getElementById('test-code').value;
+
+    if(nameInput.trim() === "") {
+        alert("Mohon masukkan nama lengkap Anda.");
+        return;
+    }
+    if(codeInput !== CONFIG_KODE_SOAL) {
+        alert("Kode soal salah! Silakan hubungi pengajar Anda.");
+        return;
+    }
+
+    studentName = nameInput;
+    startTest();
+}
 
 function startTest() {
-    document.getElementById('landing-page').style.display = 'none';
+    document.getElementById('login-page').style.display = 'none';
     document.getElementById('test-interface').style.display = 'flex';
     render();
     const countdown = setInterval(() => {
@@ -322,18 +404,14 @@ function render() {
         `;
     }
 
-    // --- BAGIAN PENANGANAN GAMBAR ---
     if(q.img && q.img.trim() !== "") {
         const imgElement = document.createElement('img');
         imgElement.src = q.img;
         imgElement.className = 'q-image';
         imgElement.alt = "Question Image";
-        
-        // Cek jika gambar gagal dimuat
         imgElement.onerror = function() {
             this.src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
         };
-        
         media.appendChild(imgElement);
     }
     
@@ -442,6 +520,7 @@ function submitTest() {
     let points = Math.round((correctTotal / questions.length) * 250);
     document.getElementById('test-interface').style.display = 'none';
     document.getElementById('result-page').style.display = 'block';
+    document.getElementById('student-name-display').innerText = "NAMA: " + studentName.toUpperCase();
     document.getElementById('score-points').innerText = points;
     document.getElementById('correct-count').innerText = correctTotal;
     document.getElementById('wrong-count').innerText = questions.length - correctTotal;
