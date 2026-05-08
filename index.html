@@ -230,12 +230,12 @@ const db = {
         { text: "週末、<u>よてい</u>はありますか。", opts: ["約束", "予定", "予約", "用事"], ans: 1 },
         { text: "朝は<u>はれ</u>でした。でも、今はくもっています。", opts: ["光れ", "暮れ", "晴れ", "疲れ"], ans: 2 },
         { text: "ホテルの<u>場所</u>はどこですか。", opts: ["こじょう", "ばしょう", "ばしょ", "ばしよ"], ans: 2 },
-        { text: "友だちはドイツに<u>留学</u>しています。", opts: ["りゅうがく", "りゅがく", "ちゅうがく", "りゅかく"], ans: 0 },
+        { text: "友だちはドイツに<u>留学</u>しています。", opts: ["りゅうがく", "りゅ gak", "ちゅうがく", "りゅかく"], ans: 0 },
         { text: "今月の３日はあべさんの<u>誕生日</u>です。", opts: ["たんじょうび", "せいねんがっぴ", "たんじょび", "たんじょうひ"], ans: 0 },
         { text: "そのイベントは<u>有料</u>です。", opts: ["ゆりょう", "ゆうりょう","ゆうりょ", "ゆりょ"], ans: 1 },
     ],
     "CONV": [
-        { text: "この料理はかんたんですから、子ども________ 作れますよ。", opts: ["とか", "しか", "でも"], ans: 2 },
+        { text: "この料理 di atas meja di kantin ini sangat enak.", opts: ["とか", "しか", "でも"], ans: 2 },
         { text: "国に帰ったら、日本語を教えるしごとを_________と思います。", opts: ["しよう", "したら", "します"], ans: 0 },
         { text: "雨が＿＿＿＿＿かもしれないから、かさを持って出かけよう。", opts: ["ふり", "ふる", "ふった"], ans: 1 },
         { text: "いらっしゃいませ。どうぞ お_______ください。", opts: ["入ろう", "入って", "入り"], ans: 2 },
@@ -261,10 +261,10 @@ const db = {
         { text: "ちゃんと聞いてください !!", img: "https://lh3.googleusercontent.com/u/0/d/1nA18o6egexet_2kAtC5ZSkCJAp_TR7kU", audio: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/soal-10.mp3", opts: ["A", "B", "C"], ans: 1 },
     ],
     "READ": [
-        { text: "正しいのはどれですか。", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/1.PNG", opts:  ["卵と牛乳をまぜてから、ホットケーキミックスを入れます。", "なにもかけないで食べます。", "マヨネーズをのせて食べます。"], ans: 0 },
+        { text: "正しいのはどれですか。", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/1.PNG", opts: ["卵と牛乳をまぜてから、ホットケーキミックスを入れます。", "なにもかけないで食べます。", "マヨネーズをのせて食べます。"], ans: 0 },
         { text: "ちゃんと読んで下さい !!", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/2.PNG", opts: ["あべさんは新しい友だちと韓国に旅行に行きたいです。", "キムさんのしゅみはJポップです。", "キムさんはなかむらさんに会ったことがあります。"], ans: 0 },
         { text: "正しいのはどれですか。", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/3.PNG", opts: ["キムさんはいそがしくてどこにも行きませんでした。", "キムさんは夏休みに帰国しませんでした。", "キムさんはまつい先生とハンさんと３人で話せてうれしかった。"], ans: 0 },
-        { text: "どれが正しいですか", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/4.PNG", opts: ["この人はねこを友だちにあげた。", "この人はねこを友だちからもらった。", "この人はねこを友だちから買った。"], ans: 0 },
+        { text: "どれが正しいですか", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/4.PNG", opts: ["この人はねこを友だちにあげた。", "この人はねこを友だちからもらった。", "この人はねこ को友だちから買った。"], ans: 0 },
         { text: "正しいものはどれですか。", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/5.PNG", opts: ["ひとり２０てんまで借りることができます。", "１５日間借りることができます。", "借りるときは、図書館カードを持たなくてもいいです。"], ans: 0 },
         { text: "今日は３月２２日です。スーパーに買い物に来ました。今、レジに並んでいます。あなたのかごの中には、食パン、たまご、冷凍コロッケ、キャベツ、りんごが入っています。どのクーポンが使えますか。", img: "https://raw.githubusercontent.com/denim2430-arch/audio-jft/main/6.PNG", opts: ["①と④と⑥", "②と⑤と⑭", "⑤と⑦と⑮"], ans: 0 },
     ]
@@ -322,8 +322,19 @@ function render() {
         `;
     }
 
-    if(q.img) {
-        media.innerHTML += `<img src="${q.img}" class="q-image" alt="Question Image" onerror="this.src='https://via.placeholder.com/400x300?text=Image+Not+Found'">`;
+    // --- BAGIAN PENANGANAN GAMBAR ---
+    if(q.img && q.img.trim() !== "") {
+        const imgElement = document.createElement('img');
+        imgElement.src = q.img;
+        imgElement.className = 'q-image';
+        imgElement.alt = "Question Image";
+        
+        // Cek jika gambar gagal dimuat
+        imgElement.onerror = function() {
+            this.src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
+        };
+        
+        media.appendChild(imgElement);
     }
     
     if(q.audio) {
@@ -364,7 +375,7 @@ function playAudio(id, index) {
     if (audioPlayCounts[index] < 2) {
         audio.play().catch(e => {
             console.error("Gagal putar audio:", e);
-            alert("Audio sedang dimuat atau koneksi tidak stabil. Silakan tunggu sebentar.");
+            alert("Audio sedang dimuat atau koneksi tidak stabil.");
         });
     } else {
         alert("Batas putar audio habis (Maks 2 kali).");
@@ -376,12 +387,14 @@ function handleAudioPlay(index) {
     const btnObj = document.getElementById(`btn-audio-${index}`);
     const infoObj = document.getElementById(`info-${index}`);
     audioPlayCounts[index]++;
-    infoObj.innerText = `Diputar: ${audioPlayCounts[index]}/2`;
+    if (infoObj) infoObj.innerText = `Diputar: ${audioPlayCounts[index]}/2`;
     if (audioPlayCounts[index] >= 2) {
         audioObj.onended = () => {
-            btnObj.disabled = true;
-            btnObj.style.background = "#ccc";
-            btnObj.innerText = "LIMIT REACHED";
+            if (btnObj) {
+                btnObj.disabled = true;
+                btnObj.style.background = "#ccc";
+                btnObj.innerText = "LIMIT REACHED";
+            }
         };
     }
 }
